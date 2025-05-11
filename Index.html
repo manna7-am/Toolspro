@@ -1,0 +1,109 @@
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Mobile Navigation Toggle
+    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+    const mainNav = document.querySelector('.main-nav');
+
+    if (mobileNavToggle && mainNav) {
+        mobileNavToggle.addEventListener('click', function() {
+            mainNav.classList.toggle('active');
+            // Optional: Change icon for toggle (e.g., bars to times)
+            const icon = mobileNavToggle.querySelector('i');
+            if (mainNav.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+    }
+
+    // Live Tool Search/Filter
+    const searchInput = document.getElementById('toolSearch');
+    const toolCards = document.querySelectorAll('.tool-card');
+    const toolCategories = document.querySelectorAll('.tool-category');
+    const toolCategoriesContainer = document.querySelector('.tool-categories-container');
+
+    let noResultsMessage = document.querySelector('.no-results-message');
+    if (!noResultsMessage && toolCategoriesContainer) {
+        noResultsMessage = document.createElement('div');
+        noResultsMessage.classList.add('no-results-message');
+        noResultsMessage.innerHTML = '<i class="fas fa-search"></i><p>No tools found matching your search.</p>';
+        toolCategoriesContainer.appendChild(noResultsMessage); // Append it once
+    }
+
+
+    if (searchInput && toolCards.length > 0) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let visibleCardsOverall = 0;
+
+            toolCategories.forEach(category => {
+                let visibleCardsInCategory = 0;
+                const cardsInCategory = category.querySelectorAll('.tool-card');
+
+                cardsInCategory.forEach(card => {
+                    const toolName = card.dataset.toolName ? card.dataset.toolName.toLowerCase() : '';
+                    const keywords = card.dataset.keywords ? card.dataset.keywords.toLowerCase() : '';
+                    
+                    if (toolName.includes(searchTerm) || keywords.includes(searchTerm)) {
+                        card.style.display = 'flex'; // Or 'block' or '' depending on original display
+                        visibleCardsInCategory++;
+                        visibleCardsOverall++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Hide category if no cards in it are visible
+                if (visibleCardsInCategory === 0 && searchTerm !== '') {
+                    category.style.display = 'none';
+                } else {
+                    category.style.display = 'block';
+                }
+            });
+
+            // Show or hide the "no results" message
+            if (noResultsMessage) {
+                if (visibleCardsOverall === 0 && searchTerm !== '') {
+                    noResultsMessage.style.display = 'block';
+                } else {
+                    noResultsMessage.style.display = 'none';
+                }
+            }
+
+        });
+    }
+
+
+    // Set current year in footer
+    const currentYearSpan = document.getElementById('currentYear');
+    if (currentYearSpan) {
+        currentYearSpan.textContent = new Date().getFullYear();
+    }
+
+    // Smooth scroll for nav links (optional, enhances single page feel)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            // Only prevent default if it's a true internal link
+            if (href.startsWith('#') && href.length > 1) {
+                const targetElement = document.querySelector(href);
+                if (targetElement) {
+                    e.preventDefault();
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    // If mobile nav is open, close it
+                    if (mainNav && mainNav.classList.contains('active')) {
+                         mainNav.classList.remove('active');
+                         const icon = mobileNavToggle.querySelector('i');
+                         icon.classList.remove('fa-times');
+                         icon.classList.add('fa-bars');
+                    }
+                }
+            }
+        });
+    });
+});
